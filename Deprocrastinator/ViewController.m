@@ -42,65 +42,30 @@
                                [UIColor whiteColor],
                                [UIColor whiteColor],
                                nil];
-    self.editMode = NO;
 }
 
-- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return self.todoItems.count;
-}
-
-- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    UITableViewCell *cell;
-    cell = [tableView dequeueReusableCellWithIdentifier:@"cellId"];
-    cell.textLabel.text = [self.todoItems objectAtIndex:indexPath.row];
-
-    cell.backgroundColor = [self.todoItemBackground objectAtIndex:indexPath.row];
-    cell.textLabel.textColor = [self.todoItemTextColors objectAtIndex:indexPath.row];
-    return cell;
-}
 - (IBAction)onAddButtonPressed:(id)sender
 {
     [self.todoItems addObject:self.customTextLabel.text];
+    [self.todoItemTextColors addObject:[UIColor blackColor]];
+    [self.todoItemBackground addObject:[UIColor whiteColor]];
     [self.todoItemsTable reloadData];
     self.customTextLabel.text = @"";
     [self.customTextLabel resignFirstResponder];
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (self.editMode) {
-        [self removeTodoItem:indexPath.row];
-    } else {
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        cell.textLabel.textColor = [UIColor greenColor];
-        self.todoItemTextColors[indexPath.row] = [UIColor greenColor];
-    }
-}
 - (IBAction)onEditButtonPressed:(UIButton *)sender
 {
-    if (self.editMode) {
+    if (self.todoItemsTable.editing) {
         [sender setTitle:@"Edit" forState:UIControlStateNormal];
-        self.editMode = NO;
         [self.todoItemsTable setEditing:NO animated:YES];
     } else {
         [sender setTitle:@"Done" forState:UIControlStateNormal];
-        self.editMode = YES;
         self.todoItemsTable.allowsSelectionDuringEditing = YES;
         [self.todoItemsTable setEditing:YES animated:YES];
     }
 }
 
--(void)tableView:(UITableView *)tableView willBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath
-{
-
-}
-
--(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    [self removeTodoItem:indexPath.row];
-}
 -(IBAction)onSwipeRight:(UISwipeGestureRecognizer *) swipeGesture
 {
     CGPoint point = [swipeGesture locationInView:self.todoItemsTable];
@@ -119,12 +84,53 @@
             if(index+1 == priorityColors.count) {
                 index = -1;
             }
+            // I know I know... I should not be setting background color :) caught onto that this morning.
+            // Especially green since then you can not read text
             cell.backgroundColor = [priorityColors objectAtIndex:index+1];
             self.todoItemBackground[indexPath.row] = [priorityColors objectAtIndex:index+1];
             break;
         }
     }
 }
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.todoItems.count;
+}
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell;
+    cell = [tableView dequeueReusableCellWithIdentifier:@"cellId"];
+    cell.textLabel.text = [self.todoItems objectAtIndex:indexPath.row];
+
+    cell.backgroundColor = [self.todoItemBackground objectAtIndex:indexPath.row];
+    cell.textLabel.textColor = [self.todoItemTextColors objectAtIndex:indexPath.row];
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (self.todoItemsTable.editing) {
+        [self removeTodoItem:indexPath.row];
+    } else {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        cell.textLabel.textColor = [UIColor greenColor];
+        self.todoItemTextColors[indexPath.row] = [UIColor greenColor];
+    }
+}
+
+
+-(void)tableView:(UITableView *)tableView willBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath
+{
+
+}
+
+-(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self removeTodoItem:indexPath.row];
+}
+
 
 -(BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
 {
